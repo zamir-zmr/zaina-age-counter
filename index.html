@@ -70,6 +70,32 @@
             text-align: center;
         }
 
+        /* Language Toggle Button Style */
+        .lang-toggle-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #00f2fe;
+            padding: 6px 14px;
+            border-radius: 30px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.3s ease;
+            box-shadow: 0 0 10px rgba(0, 242, 254, 0.1);
+        }
+
+        .lang-toggle-btn:hover {
+            background: rgba(0, 242, 254, 0.1);
+            border-color: #00f2fe;
+            transform: scale(1.05);
+        }
+
         /* Header Styles */
         .header-title {
             font-size: 1.2rem;
@@ -77,6 +103,7 @@
             letter-spacing: 3px;
             color: #00f2fe;
             font-weight: 600;
+            margin-top: 15px;
             margin-bottom: 5px;
             text-shadow: 0 0 10px rgba(0, 242, 254, 0.5);
         }
@@ -208,6 +235,7 @@
             .baby-name { font-size: 2rem; }
             .counter-value { font-size: 1.8rem; }
             .counter-grid { gap: 10px; }
+            .lang-toggle-btn { top: 15px; right: 15px; padding: 4px 10px; font-size: 0.75rem; }
         }
     </style>
 </head>
@@ -217,30 +245,35 @@
     <div class="bg-glow-2"></div>
 
     <div class="container">
-        <div class="header-title">Growing Every Day</div>
+        <!-- Language Switcher Icon/Button -->
+        <button class="lang-toggle-btn" onclick="toggleLanguage()">
+            🌐 <span id="langBtnText">हिन्दी</span>
+        </button>
+
+        <div class="header-title" id="text-title">Growing Every Day</div>
         <div class="baby-name">Zaina Parveen</div>
-        <div class="birth-info">Born: 24 May 2026</div>
+        <div class="birth-info" id="text-born">Born: 24 May 2026</div>
 
         <!-- Format: YY MM DD Dashboard -->
         <div class="counter-grid">
             <div class="counter-card card-yy">
-                <div class="counter-value" id="years">00</div>
-                <div class="counter-label">Years</div>
+                <div class="counter-value" id="years">0</div>
+                <div class="counter-label" id="text-years">Years</div>
             </div>
             <div class="counter-card card-mm">
-                <div class="counter-value" id="months">00</div>
-                <div class="counter-label">Months</div>
+                <div class="counter-value" id="months">0</div>
+                <div class="counter-label" id="text-months">Months</div>
             </div>
             <div class="counter-card card-dd">
-                <div class="counter-value" id="days">00</div>
-                <div class="counter-label">Days</div>
+                <div class="counter-value" id="days">0</div>
+                <div class="counter-label" id="text-days">Days</div>
             </div>
         </div>
 
         <!-- Total Days Tracker Strip -->
         <div class="live-strip">
             <div class="total-days" id="totalDaysBox">
-                Total: <span id="totalDaysCount">0</span> Days Old
+                <span id="text-total-prefix">Total:</span> <span id="totalDaysCount">0</span> <span id="text-total-suffix">Days Old</span>
             </div>
         </div>
 
@@ -254,17 +287,63 @@
     <script>
         // Target Baby Birth Date & Time (24 May 2026 at 00:00:00)
         const birthDate = new Date("2026-05-24T00:00:00");
+        
+        // Language State Management
+        let currentLang = 'en'; // Default is English
+
+        const translations = {
+            en: {
+                btn: "हिन्दी",
+                title: "Growing Every Day",
+                born: "Born: 24 May 2026",
+                years: "Years",
+                months: "Months",
+                days: "Days",
+                totalPrefix: "Total:",
+                totalSuffix: "Days Old",
+                livePrefix: "Live Counting Tracker:"
+            },
+            hi: {
+                btn: "English",
+                title: "हर दिन बढ़ रही है",
+                born: "जन्म: 24 मई 2026",
+                years: "साल",
+                months: "महीने",
+                days: "दिन",
+                totalPrefix: "कुल:",
+                totalSuffix: "दिन की हुई",
+                livePrefix: "लाइव काउंटिंग ट्रैकर:"
+            }
+        };
+
+        function toggleLanguage() {
+            currentLang = currentLang === 'en' ? 'hi' : 'en';
+            updateStaticText();
+            updateAgeCounter(); // Immediately refresh the time text display language
+        }
+
+        function updateStaticText() {
+            const langData = translations[currentLang];
+            document.getElementById("langBtnText").innerText = langData.btn;
+            document.getElementById("text-title").innerText = langData.title;
+            document.getElementById("text-born").innerText = langData.born;
+            document.getElementById("text-years").innerText = langData.years;
+            document.getElementById("text-months").innerText = langData.months;
+            document.getElementById("text-days").innerText = langData.days;
+            document.getElementById("text-total-prefix").innerText = langData.totalPrefix;
+            document.getElementById("text-total-suffix").innerText = langData.totalSuffix;
+        }
 
         function updateAgeCounter() {
             const now = new Date();
+            const langData = translations[currentLang];
             
-            // Agar system time birth date se pehle ka hai (just in case)
             if (now < birthDate) {
-                document.getElementById("years").innerText = "00";
-                document.getElementById("months").innerText = "00";
-                document.getElementById("days").innerText = "00";
+                document.getElementById("years").innerText = "0";
+                document.getElementById("months").innerText = "0";
+                document.getElementById("days").innerText = "0";
                 document.getElementById("totalDaysCount").innerText = "0";
-                document.getElementById("liveTimeText").innerText = "Waiting for birth date...";
+                document.getElementById("liveTimeText").innerText = currentLang === 'en' ? "Waiting for birth date..." : "जन्म तिथि का इंतजार है...";
                 return;
             }
 
@@ -288,7 +367,6 @@
 
             // Adjust days if negative
             if (calculatedDays < 0) {
-                // Get previous month's total days count
                 const previousMonth = new Date(now.getFullYear(), now.getMonth(), 0).getDate();
                 calculatedDays += previousMonth;
                 calculatedMonths--;
@@ -300,24 +378,26 @@
                 calculatedYears--;
             }
 
-            // Format numbers to look clean (Pad with leading zero)
-            const displayYears = String(calculatedYears).padStart(2, '0');
-            const displayMonths = String(calculatedMonths).padStart(2, '0');
-            const displayDays = String(calculatedDays).padStart(2, '0');
+            // DOM Update UI Elements (No padding zeros, clean single/multiple raw integers)
+            document.getElementById("years").innerText = calculatedYears;
+            document.getElementById("months").innerText = calculatedMonths;
+            document.getElementById("days").innerText = calculatedDays;
 
-            // DOM Update UI Elements
-            document.getElementById("years").innerText = displayYears;
-            document.getElementById("months").innerText = displayMonths;
-            document.getElementById("days").innerText = displayDays;
+            // 3. 12-Hour format with AM/PM for Live Ticker (No leading zero on hours)
+            let rawHours = now.getHours();
+            const ampm = rawHours >= 12 ? 'PM' : 'AM';
+            
+            let displayHours = rawHours % 12;
+            displayHours = displayHours ? displayHours : 12; // Convert '0' to '12'
 
-            // Time string for live tracking
-            const hours = String(now.getHours()).padStart(2, '0');
             const minutes = String(now.getMinutes()).padStart(2, '0');
             const seconds = String(now.getSeconds()).padStart(2, '0');
-            document.getElementById("liveTimeText").innerText = `Live Counting Tracker: ${hours}:${minutes}:${seconds}`;
+            
+            document.getElementById("liveTimeText").innerText = `${langData.livePrefix} ${displayHours}:${minutes}:${seconds} ${ampm}`;
         }
 
-        // Run application on start and sync interval every 1 second
+        // Initialize App UI Text and Interval Loops
+        updateStaticText();
         updateAgeCounter();
         setInterval(updateAgeCounter, 1000);
     </script>
