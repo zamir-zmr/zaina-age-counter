@@ -211,7 +211,7 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            gap: 8px;
+            white-space: nowrap;
         }
 
         .live-dot {
@@ -221,6 +221,48 @@
             border-radius: 50%;
             animation: pulse 1.5s infinite;
             box-shadow: 0 0 8px #00ff66;
+            flex-shrink: 0;
+            margin-right: 8px;
+        }
+
+        /* Absolute shake-proof structure using precise grid blocks */
+        .time-display-container {
+            display: inline-flex;
+            align-items: center;
+            font-variant-numeric: tabular-nums;
+            -moz-font-feature-settings: "tnum";
+            -webkit-font-feature-settings: "tnum";
+            font-feature-settings: "tnum";
+            margin-left: 6px;
+        }
+
+        /* Standard digits segment container */
+        .time-block {
+            display: inline-block;
+            text-align: center;
+            width: 20px; /* Locked width for 2-digit numbers */
+        }
+
+        .time-block.hr-block {
+            width: 16px; /* Optimized single/double digit block for hour */
+            text-align: right;
+        }
+
+        .time-colon {
+            display: inline-block;
+            text-align: center;
+            width: 3px;
+            color: rgba(255, 255, 255, 0.3);
+        }
+
+        /* Separate and lock AM/PM to the far right without shaking */
+        .ampm-block {
+            display: inline-block;
+            width: 32px;
+            text-align: left;
+            margin-left: 6px;
+            font-weight: 600;
+            color: rgba(255, 255, 255, 0.5);
         }
 
         @keyframes pulse {
@@ -280,7 +322,19 @@
         <!-- Live Status Ticker -->
         <div class="live-clock">
             <div class="live-dot"></div>
-            <div id="liveTimeText">Calculating live age...</div>
+            <span id="liveLabel">Live Counting Tracker:</span>
+            
+            <!-- Completely Split Monospace Structure -->
+            <div class="time-display-container">
+                <span id="lblHour" class="time-block hr-block">0</span>
+                <span class="time-colon">:</span>
+                <span id="lblMin" class="time-block">00</span>
+                <span class="time-colon">:</span>
+                <span id="lblSec" class="time-block">00</span>
+                <span class="time-colon">:</span>
+                <span id="lblMs" class="time-block">00</span>
+                <span id="lblAmpm" class="ampm-block">AM</span>
+            </div>
         </div>
     </div>
 
@@ -301,25 +355,25 @@
                 days: "Days",
                 totalPrefix: "Total:",
                 totalSuffix: "Days Old",
-                livePrefix: "Live Counting Tracker:"
+                livePrefix: "Now Time:"
             },
             hi: {
                 btn: "English",
                 title: "हर दिन बढ़ रही है",
                 born: "जन्म: 24 मई 2026",
-                years: "वर्ष",
+                years: "साल",
                 months: "महीने",
                 days: "दिन",
                 totalPrefix: "कुल:",
                 totalSuffix: "दिन की हुई",
-                livePrefix: "लाइव काउंटिंग ट्रैकर:"
+                livePrefix: "अभी समय है:"
             }
         };
 
         function toggleLanguage() {
             currentLang = currentLang === 'en' ? 'hi' : 'en';
             updateStaticText();
-            updateAgeCounter(); // Immediately refresh the time text display language
+            updateAgeCounter(); 
         }
 
         function updateStaticText() {
@@ -332,18 +386,17 @@
             document.getElementById("text-days").innerText = langData.days;
             document.getElementById("text-total-prefix").innerText = langData.totalPrefix;
             document.getElementById("text-total-suffix").innerText = langData.totalSuffix;
+            document.getElementById("liveLabel").innerText = langData.livePrefix;
         }
 
         function updateAgeCounter() {
             const now = new Date();
-            const langData = translations[currentLang];
             
             if (now < birthDate) {
                 document.getElementById("years").innerText = "0";
                 document.getElementById("months").innerText = "0";
                 document.getElementById("days").innerText = "0";
                 document.getElementById("totalDaysCount").innerText = "0";
-                document.getElementById("liveTimeText").innerText = currentLang === 'en' ? "Waiting for birth date..." : "जन्म तिथि का इंतजार है...";
                 return;
             }
 
@@ -365,25 +418,22 @@
             let calculatedMonths = currentMonth - birthMonth;
             let calculatedDays = currentDay - birthDay;
 
-            // Adjust days if negative
             if (calculatedDays < 0) {
                 const previousMonth = new Date(now.getFullYear(), now.getMonth(), 0).getDate();
                 calculatedDays += previousMonth;
                 calculatedMonths--;
             }
 
-            // Adjust months if negative
             if (calculatedMonths < 0) {
                 calculatedMonths += 12;
                 calculatedYears--;
             }
 
-            // DOM Update UI Elements (No padding zeros, clean single/multiple raw integers)
             document.getElementById("years").innerText = calculatedYears;
             document.getElementById("months").innerText = calculatedMonths;
             document.getElementById("days").innerText = calculatedDays;
 
-            // 3. 12-Hour format with AM/PM & Milliseconds (No leading zero on hours)
+            // 3. 12-Hour format details injection to individual spans
             let rawHours = now.getHours();
             const ampm = rawHours >= 12 ? 'PM' : 'AM';
             
@@ -392,15 +442,17 @@
 
             const minutes = String(now.getMinutes()).padStart(2, '0');
             const seconds = String(now.getSeconds()).padStart(2, '0');
-            
-            // Get Milliseconds and convert to 2-digit format (0-99 scale)
             const ms = String(Math.floor(now.getMilliseconds() / 10)).padStart(2, '0');
             
-            // Milliseconds format tracking display: H:MM:SS:MS AM/PM
-            document.getElementById("liveTimeText").innerText = `${langData.livePrefix} ${displayHours}:${minutes}:${seconds}:${ms} ${ampm}`;
+            // Updating each UI element block independently to maintain position layout
+            document.getElementById("lblHour").innerText = displayHours;
+            document.getElementById("lblMin").innerText = minutes;
+            document.getElementById("lblSec").innerText = seconds;
+            document.getElementById("lblMs").innerText = ms;
+            document.getElementById("lblAmpm").innerText = ampm;
         }
 
-        // Initialize App UI Text and high-frequency interval loop (40ms refresh for smooth millisecond transition)
+        // Initialize App
         updateStaticText();
         updateAgeCounter();
         setInterval(updateAgeCounter, 40);
