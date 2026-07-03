@@ -307,7 +307,7 @@
                 btn: "English",
                 title: "हर दिन बढ़ रही है",
                 born: "जन्म: 24 मई 2026",
-                years: "साल",
+                years: "वर्ष",
                 months: "महीने",
                 days: "दिन",
                 totalPrefix: "कुल:",
@@ -383,7 +383,7 @@
             document.getElementById("months").innerText = calculatedMonths;
             document.getElementById("days").innerText = calculatedDays;
 
-            // 3. 12-Hour format with AM/PM for Live Ticker (No leading zero on hours)
+            // 3. 12-Hour format with AM/PM & Milliseconds (No leading zero on hours)
             let rawHours = now.getHours();
             const ampm = rawHours >= 12 ? 'PM' : 'AM';
             
@@ -393,13 +393,17 @@
             const minutes = String(now.getMinutes()).padStart(2, '0');
             const seconds = String(now.getSeconds()).padStart(2, '0');
             
-            document.getElementById("liveTimeText").innerText = `${langData.livePrefix} ${displayHours}:${minutes}:${seconds} ${ampm}`;
+            // Get Milliseconds and convert to 2-digit format (0-99 scale)
+            const ms = String(Math.floor(now.getMilliseconds() / 10)).padStart(2, '0');
+            
+            // Milliseconds format tracking display: H:MM:SS:MS AM/PM
+            document.getElementById("liveTimeText").innerText = `${langData.livePrefix} ${displayHours}:${minutes}:${seconds}:${ms} ${ampm}`;
         }
 
-        // Initialize App UI Text and Interval Loops
+        // Initialize App UI Text and high-frequency interval loop (40ms refresh for smooth millisecond transition)
         updateStaticText();
         updateAgeCounter();
-        setInterval(updateAgeCounter, 1000);
+        setInterval(updateAgeCounter, 40);
     </script>
 </body>
 </html>
