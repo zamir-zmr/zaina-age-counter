@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zaina Parveen - Age Counter</title>
+    <!-- Google Fonts for Premium Typography -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        body {
+            min-height: 100vh;
+            background: radial-gradient(circle at top left, #1a1c29, #0e1017);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: #ffffff;
+            overflow-x: hidden;
+            padding: 20px;
+        }
+
+        /* Abstract Premium Glowing Background Elements */
+        .bg-glow-1 {
+            position: absolute;
+            width: 300px;
+            height: 300px;
+            background: linear-gradient(135deg, #00f2fe, #4facfe);
+            border-radius: 50%;
+            filter: blur(120px);
+            top: 10%;
+            left: 15%;
+            z-index: 1;
+            opacity: 0.3;
+        }
+
+        .bg-glow-2 {
+            position: absolute;
+            width: 350px;
+            height: 350px;
+            background: linear-gradient(135deg, #ff007f, #7928ca);
+            border-radius: 50%;
+            filter: blur(130px);
+            bottom: 10%;
+            right: 15%;
+            z-index: 1;
+            opacity: 0.3;
+        }
+
+        /* Glassmorphism Container */
+        .container {
+            position: relative;
+            z-index: 10;
+            width: 100%;
+            max-width: 550px;
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px rgba(255, 255, 255, 0.1) solid;
+            border-radius: 24px;
+            padding: 40px 30px;
+            box-shadow: 0 25px 45px rgba(0, 0, 0, 0.3);
+            text-align: center;
+        }
+
+        /* Header Styles */
+        .header-title {
+            font-size: 1.2rem;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            color: #00f2fe;
+            font-weight: 600;
+            margin-bottom: 5px;
+            text-shadow: 0 0 10px rgba(0, 242, 254, 0.5);
+        }
+
+        .baby-name {
+            font-size: 2.5rem;
+            font-weight: 700;
+            background: linear-gradient(to right, #ffffff, #ff007f, #00f2fe);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+
+        .birth-info {
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.6);
+            margin-bottom: 35px;
+            background: rgba(255, 255, 255, 0.05);
+            display: inline-block;
+            padding: 6px 16px;
+            border-radius: 50px;
+            border: 1px rgba(255, 255, 255, 0.05) solid;
+        }
+
+        /* Dashboard Grid Layout */
+        .counter-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .counter-card {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 16px;
+            padding: 20px 10px;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .counter-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+        }
+
+        .card-yy::before { background: #ff007f; }
+        .card-mm::before { background: #7928ca; }
+        .card-dd::before { background: #00f2fe; }
+
+        .counter-card:hover {
+            transform: translateY(-5px);
+            background: rgba(255, 255, 255, 0.05);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+        }
+
+        .counter-value {
+            font-size: 2.2rem;
+            font-weight: 700;
+            line-height: 1;
+            margin-bottom: 8px;
+        }
+
+        .card-yy .counter-value { color: #ff007f; text-shadow: 0 0 15px rgba(255, 0, 127, 0.3); }
+        .card-mm .counter-value { color: #b829fa; text-shadow: 0 0 15px rgba(184, 41, 250, 0.3); }
+        .card-dd .counter-value { color: #00f2fe; text-shadow: 0 0 15px rgba(0, 242, 254, 0.3); }
+
+        .counter-label {
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: rgba(255, 255, 255, 0.5);
+            font-weight: 600;
+        }
+
+        /* Total Days / Live Ticker Strip */
+        .live-strip {
+            background: linear-gradient(90deg, rgba(255, 0, 127, 0.1), rgba(0, 242, 254, 0.1));
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 16px;
+            padding: 15px;
+            margin-bottom: 25px;
+        }
+
+        .total-days {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #ffffff;
+        }
+
+        .total-days span {
+            color: #00f2fe;
+            font-weight: 700;
+        }
+
+        /* Bottom Live Clock Style */
+        .live-clock {
+            font-size: 0.85rem;
+            color: rgba(255, 255, 255, 0.4);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .live-dot {
+            width: 8px;
+            height: 8px;
+            background-color: #00ff66;
+            border-radius: 50%;
+            animation: pulse 1.5s infinite;
+            box-shadow: 0 0 8px #00ff66;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(0.9); opacity: 0.4; }
+            50% { transform: scale(1.1); opacity: 1; }
+            100% { transform: scale(0.9); opacity: 0.4; }
+        }
+
+        /* Responsive Design */
+        @media (max-width: 480px) {
+            .container { padding: 30px 20px; }
+            .baby-name { font-size: 2rem; }
+            .counter-value { font-size: 1.8rem; }
+            .counter-grid { gap: 10px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="bg-glow-1"></div>
+    <div class="bg-glow-2"></div>
+
+    <div class="container">
+        <div class="header-title">Growing Every Day</div>
+        <div class="baby-name">Zaina Parveen</div>
+        <div class="birth-info">Born: 24 May 2026</div>
+
+        <!-- Format: YY MM DD Dashboard -->
+        <div class="counter-grid">
+            <div class="counter-card card-yy">
+                <div class="counter-value" id="years">00</div>
+                <div class="counter-label">Years</div>
+            </div>
+            <div class="counter-card card-mm">
+                <div class="counter-value" id="months">00</div>
+                <div class="counter-label">Months</div>
+            </div>
+            <div class="counter-card card-dd">
+                <div class="counter-value" id="days">00</div>
+                <div class="counter-label">Days</div>
+            </div>
+        </div>
+
+        <!-- Total Days Tracker Strip -->
+        <div class="live-strip">
+            <div class="total-days" id="totalDaysBox">
+                Total: <span id="totalDaysCount">0</span> Days Old
+            </div>
+        </div>
+
+        <!-- Live Status Ticker -->
+        <div class="live-clock">
+            <div class="live-dot"></div>
+            <div id="liveTimeText">Calculating live age...</div>
+        </div>
+    </div>
+
+    <script>
+        // Target Baby Birth Date & Time (24 May 2026 at 00:00:00)
+        const birthDate = new Date("2026-05-24T00:00:00");
+
+        function updateAgeCounter() {
+            const now = new Date();
+            
+            // Agar system time birth date se pehle ka hai (just in case)
+            if (now < birthDate) {
+                document.getElementById("years").innerText = "00";
+                document.getElementById("months").innerText = "00";
+                document.getElementById("days").innerText = "00";
+                document.getElementById("totalDaysCount").innerText = "0";
+                document.getElementById("liveTimeText").innerText = "Waiting for birth date...";
+                return;
+            }
+
+            // 1. Calculate Total Days Directly
+            const totalTimeDifference = now - birthDate;
+            const totalDaysCalculated = Math.floor(totalTimeDifference / (1000 * 60 * 60 * 24));
+            document.getElementById("totalDaysCount").innerText = totalDaysCalculated;
+
+            // 2. Precise Calendar YY MM DD Breakdown Calculation
+            let currentYear = now.getFullYear();
+            let currentMonth = now.getMonth();
+            let currentDay = now.getDate();
+
+            let birthYear = birthDate.getFullYear();
+            let birthMonth = birthDate.getMonth();
+            let birthDay = birthDate.getDate();
+
+            let calculatedYears = currentYear - birthYear;
+            let calculatedMonths = currentMonth - birthMonth;
+            let calculatedDays = currentDay - birthDay;
+
+            // Adjust days if negative
+            if (calculatedDays < 0) {
+                // Get previous month's total days count
+                const previousMonth = new Date(now.getFullYear(), now.getMonth(), 0).getDate();
+                calculatedDays += previousMonth;
+                calculatedMonths--;
+            }
+
+            // Adjust months if negative
+            if (calculatedMonths < 0) {
+                calculatedMonths += 12;
+                calculatedYears--;
+            }
+
+            // Format numbers to look clean (Pad with leading zero)
+            const displayYears = String(calculatedYears).padStart(2, '0');
+            const displayMonths = String(calculatedMonths).padStart(2, '0');
+            const displayDays = String(calculatedDays).padStart(2, '0');
+
+            // DOM Update UI Elements
+            document.getElementById("years").innerText = displayYears;
+            document.getElementById("months").innerText = displayMonths;
+            document.getElementById("days").innerText = displayDays;
+
+            // Time string for live tracking
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            const seconds = String(now.getSeconds()).padStart(2, '0');
+            document.getElementById("liveTimeText").innerText = `Live Counting Tracker: ${hours}:${minutes}:${seconds}`;
+        }
+
+        // Run application on start and sync interval every 1 second
+        updateAgeCounter();
+        setInterval(updateAgeCounter, 1000);
+    </script>
+</body>
+</html>
