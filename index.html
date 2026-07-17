@@ -101,6 +101,7 @@
             display: flex;
             justify-content: center;
             margin-bottom: 10px;
+            perspective: 900px;
         }
 
         .photo-circle {
@@ -108,20 +109,44 @@
             height: 120px;
             border-radius: 50%;
             background: rgba(255, 255, 255, 0.05);
-            border: 2px solid rgba(0, 242, 254, 0.4);
-            box-shadow: 0 0 20px rgba(255, 0, 127, 0.25), 0 0 20px rgba(0, 242, 254, 0.2);
+            border: 2px solid rgba(0, 242, 254, 0.5);
             display: flex;
             align-items: center;
             justify-content: center;
             overflow: hidden;
             cursor: pointer;
             position: relative;
-            transition: transform 0.3s ease, border-color 0.3s ease;
+            transition: transform 0.3s ease;
+            animation: photoGlow 3s ease-in-out infinite;
+            transform-style: preserve-3d;
+            backface-visibility: hidden;
+        }
+
+        .photo-circle.flipping {
+            animation: photoGlow 3s ease-in-out infinite, coinFlip 2.5s cubic-bezier(0.45, 0.05, 0.55, 0.95);
+        }
+
+        @keyframes coinFlip {
+            0% { transform: rotateY(0deg) scale(1); }
+            45% { transform: rotateY(160deg) scale(1.08); }
+            50% { transform: rotateY(180deg) scale(1.1); }
+            55% { transform: rotateY(200deg) scale(1.08); }
+            100% { transform: rotateY(360deg) scale(1); }
+        }
+
+        @keyframes photoGlow {
+            0%, 100% {
+                box-shadow: 0 0 14px rgba(0, 242, 254, 0.25), 0 0 26px rgba(255, 0, 127, 0.15);
+                border-color: rgba(0, 242, 254, 0.45);
+            }
+            50% {
+                box-shadow: 0 0 22px rgba(0, 242, 254, 0.5), 0 0 42px rgba(255, 0, 127, 0.3);
+                border-color: rgba(0, 242, 254, 0.85);
+            }
         }
 
         .photo-circle:hover {
             transform: scale(1.04);
-            border-color: #00f2fe;
         }
 
         .photo-circle img {
@@ -143,21 +168,21 @@
             letter-spacing: 0.5px;
         }
 
-/*         .photo-badge {
-    position: absolute;
-    bottom: 2px;
-    right: 2px;
-    width: 30px;
-    height: 30px;
-    background: #00f2fe;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 0.9rem;
-    box-shadow: 0 0 10px rgba(0, 242, 254, 0.5);
-}
- */
+        .photo-badge {
+            position: absolute;
+            bottom: 2px;
+            right: 2px;
+            width: 30px;
+            height: 30px;
+            background: #00f2fe;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.9rem;
+            box-shadow: 0 0 10px rgba(0, 242, 254, 0.5);
+        }
+
         .photo-menu-overlay {
             display: none;
             position: fixed;
@@ -359,6 +384,7 @@
             -webkit-font-feature-settings: "tnum";
             font-feature-settings: "tnum";
             margin-left: 6px;
+            perspective: 200px;
         }
 
         /* Standard digits segment container */
@@ -366,6 +392,8 @@
             display: inline-block;
             text-align: center;
             width: 20px; /* Locked width for 2-digit numbers */
+            transform-style: preserve-3d;
+            backface-visibility: hidden;
         }
 
         .time-block.hr-block {
@@ -388,6 +416,20 @@
             margin-left: 6px;
             font-weight: 600;
             color: rgba(255, 255, 255, 0.5);
+            transform-style: preserve-3d;
+            backface-visibility: hidden;
+        }
+
+        .time-block.digit-flip,
+        .ampm-block.digit-flip {
+            animation: digitFlip 0.32s cubic-bezier(0.45, 0.05, 0.55, 0.95);
+        }
+
+        @keyframes digitFlip {
+            0% { transform: rotateX(0deg); color: inherit; }
+            48% { transform: rotateX(90deg); }
+            50% { transform: rotateX(90deg); color: #00f2fe; }
+            100% { transform: rotateX(0deg); }
         }
 
         @keyframes pulse {
@@ -422,7 +464,7 @@
             <div class="photo-circle" id="photoCircle" onclick="openPhotoMenu()">
                 <img id="photoImg" src="" alt="Baby Photo" style="display:none;">
                 <span class="photo-icon" id="photoIcon">📷</span>
-                <span class="photo-badge" id="photoBadge"></span>
+                <span class="photo-badge" id="photoBadge">📷</span>
             </div>
         </div>
         <div class="photo-hint" id="text-photo-hint">Tap to add photo</div>
@@ -597,11 +639,25 @@
         });
 
         function showPhotoPreview(dataUrl) {
-            document.getElementById("photoImg").src = dataUrl;
-            document.getElementById("photoImg").style.display = "block";
-            document.getElementById("photoIcon").style.display = "none";
-            document.getElementById("photoBadge").style.display = "none";
-            document.getElementById("text-photo-hint").style.display = "none";
+            const circle = document.getElementById("photoCircle");
+
+            circle.classList.remove("flipping");
+            void circle.offsetWidth; // restart animation if it's already mid-flip
+            circle.classList.add("flipping");
+
+            // Swap the actual image right at the flip's edge-on midpoint (~1250ms of the 2.5s flip)
+            setTimeout(function () {
+                document.getElementById("photoImg").src = dataUrl;
+                document.getElementById("photoImg").style.display = "block";
+                document.getElementById("photoIcon").style.display = "none";
+                document.getElementById("photoBadge").style.display = "none";
+                document.getElementById("text-photo-hint").style.display = "none";
+            }, 1250);
+
+            setTimeout(function () {
+                circle.classList.remove("flipping");
+            }, 2550);
+
             photoAlreadySet = true;
         }
 
@@ -713,6 +769,22 @@
             });
         }
 
+        // Smooth flip-clock style update: only animates when the value actually changes
+        function flipSetText(elId, newText) {
+            const el = document.getElementById(elId);
+            if (el.dataset.val === newText) return;
+            el.dataset.val = newText;
+            el.classList.remove("digit-flip");
+            void el.offsetWidth; // restart animation
+            el.classList.add("digit-flip");
+            setTimeout(function () {
+                el.innerText = newText;
+            }, 155); // swap right at the flip's edge-on midpoint
+            setTimeout(function () {
+                el.classList.remove("digit-flip");
+            }, 330);
+        }
+
         function updateAgeCounter() {
             const now = new Date();
             
@@ -769,11 +841,11 @@
             const ms = String(Math.floor(now.getMilliseconds() / 10)).padStart(2, '0');
             
             // Updating each UI element block independently to maintain position layout
-            document.getElementById("lblHour").innerText = displayHours;
-            document.getElementById("lblMin").innerText = minutes;
-            document.getElementById("lblSec").innerText = seconds;
-            document.getElementById("lblMs").innerText = ms;
-            document.getElementById("lblAmpm").innerText = ampm;
+            flipSetText("lblHour", String(displayHours));
+            flipSetText("lblMin", minutes);
+            flipSetText("lblSec", seconds);
+            document.getElementById("lblMs").innerText = ms; // too fast-changing to flip smoothly
+            flipSetText("lblAmpm", ampm);
         }
 
         // Initialize App
