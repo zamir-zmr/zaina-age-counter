@@ -96,6 +96,122 @@
             transform: scale(1.05);
         }
 
+        /* Photo Upload Circle */
+        .photo-wrapper {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 10px;
+        }
+
+        .photo-circle {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid rgba(0, 242, 254, 0.4);
+            box-shadow: 0 0 20px rgba(255, 0, 127, 0.25), 0 0 20px rgba(0, 242, 254, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            cursor: pointer;
+            position: relative;
+            transition: transform 0.3s ease, border-color 0.3s ease;
+        }
+
+        .photo-circle:hover {
+            transform: scale(1.04);
+            border-color: #00f2fe;
+        }
+
+        .photo-circle img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .photo-icon {
+            font-size: 2rem;
+            opacity: 0.6;
+        }
+
+        .photo-hint {
+            text-align: center;
+            font-size: 0.7rem;
+            color: rgba(255, 255, 255, 0.4);
+            margin-bottom: 20px;
+            letter-spacing: 0.5px;
+        }
+
+        .photo-badge {
+            position: absolute;
+            bottom: 2px;
+            right: 2px;
+            width: 30px;
+            height: 30px;
+            background: #00f2fe;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.9rem;
+            box-shadow: 0 0 10px rgba(0, 242, 254, 0.5);
+        }
+
+        .photo-menu-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 100;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .photo-menu-overlay.active {
+            display: flex;
+        }
+
+        .photo-menu-box {
+            background: #1a1c29;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 18px;
+            padding: 20px;
+            width: 240px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+        }
+
+        .photo-menu-btn {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            width: 100%;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #ffffff;
+            padding: 12px 16px;
+            border-radius: 12px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            margin-bottom: 10px;
+            transition: background 0.2s ease;
+        }
+
+        .photo-menu-btn:last-child { margin-bottom: 0; }
+
+        .photo-menu-btn:hover {
+            background: rgba(0, 242, 254, 0.15);
+        }
+
+        .photo-menu-cancel {
+            text-align: center;
+            font-size: 0.8rem;
+            color: rgba(255, 255, 255, 0.4);
+            margin-top: 14px;
+            cursor: pointer;
+        }
+
         /* Header Styles */
         .header-title {
             font-size: 1.2rem;
@@ -292,6 +408,28 @@
             🌐 <span id="langBtnText">हिन्दी</span>
         </button>
 
+        <!-- Baby Photo Upload -->
+        <div class="photo-wrapper">
+            <div class="photo-circle" id="photoCircle" onclick="openPhotoMenu()">
+                <img id="photoImg" src="" alt="Baby Photo" style="display:none;">
+                <span class="photo-icon" id="photoIcon">📷</span>
+                <span class="photo-badge">📷</span>
+            </div>
+        </div>
+        <div class="photo-hint" id="text-photo-hint">Tap to add photo</div>
+
+        <!-- Camera or Gallery choice menu -->
+        <div class="photo-menu-overlay" id="photoMenuOverlay" onclick="closePhotoMenuOnOverlay(event)">
+            <div class="photo-menu-box">
+                <button class="photo-menu-btn" id="btnUseCamera">📷 <span id="text-use-camera">Use Camera</span></button>
+                <button class="photo-menu-btn" id="btnUseGallery">🖼️ <span id="text-use-gallery">Choose from Gallery</span></button>
+                <div class="photo-menu-cancel" id="text-cancel" onclick="closePhotoMenu()">Cancel</div>
+            </div>
+        </div>
+
+        <input type="file" id="photoInputCamera" accept="image/*" capture="environment" style="display:none;">
+        <input type="file" id="photoInputGallery" accept="image/*" style="display:none;">
+
         <div class="header-title" id="text-title">Growing Every Day</div>
         <div class="baby-name">Zaina Parveen</div>
         <div class="birth-info" id="text-born">Born: 24 May 2026</div>
@@ -338,12 +476,29 @@
         </div>
     </div>
 
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyA3bsKfP7CxS0Sb0CY6xu_vFogVcxbJCII",
+            authDomain: "ashcostingapp.firebaseapp.com",
+            databaseURL: "https://ashcostingapp-default-rtdb.firebaseio.com",
+            projectId: "ashcostingapp",
+            storageBucket: "ashcostingapp.firebasestorage.app",
+            messagingSenderId: "576053214259",
+            appId: "1:576053214259:web:e47a6c38721d62580fb746"
+        };
+        firebase.initializeApp(firebaseConfig);
+    </script>
+
     <script>
         // Target Baby Birth Date & Time (24 May 2026 at 00:00:00)
         const birthDate = new Date("2026-05-24T00:00:00");
         
         // Language State Management
         let currentLang = 'en'; // Default is English
+        let photoAlreadySet = false;
 
         const translations = {
             en: {
@@ -355,7 +510,11 @@
                 days: "Days",
                 totalPrefix: "Total:",
                 totalSuffix: "Days Old",
-                livePrefix: "Now Time:"
+                livePrefix: "Now Time:",
+                photoHint: "Tap to add photo",
+                useCamera: "Use Camera",
+                useGallery: "Choose from Gallery",
+                cancel: "Cancel"
             },
             hi: {
                 btn: "English",
@@ -366,7 +525,11 @@
                 days: "दिन",
                 totalPrefix: "कुल:",
                 totalSuffix: "दिन की हुई",
-                livePrefix: "अभी समय है:"
+                livePrefix: "अभी समय है:",
+                photoHint: "फोटो जोड़ने के लिए टैप करें",
+                useCamera: "कैमरा इस्तेमाल करें",
+                useGallery: "गैलरी से चुनें",
+                cancel: "रद्द करें"
             }
         };
 
@@ -387,6 +550,126 @@
             document.getElementById("text-total-prefix").innerText = langData.totalPrefix;
             document.getElementById("text-total-suffix").innerText = langData.totalSuffix;
             document.getElementById("liveLabel").innerText = langData.livePrefix;
+            const photoHintEl = document.getElementById("text-photo-hint");
+            if (photoHintEl && !photoAlreadySet) {
+                photoHintEl.innerText = langData.photoHint;
+            }
+            document.getElementById("text-use-camera").innerText = langData.useCamera;
+            document.getElementById("text-use-gallery").innerText = langData.useGallery;
+            document.getElementById("text-cancel").innerText = langData.cancel;
+        }
+
+        // Baby Photo Upload Handling (Camera or Gallery) — synced via Firebase
+        function openPhotoMenu() {
+            document.getElementById("photoMenuOverlay").classList.add("active");
+        }
+
+        function closePhotoMenu() {
+            document.getElementById("photoMenuOverlay").classList.remove("active");
+        }
+
+        function closePhotoMenuOnOverlay(event) {
+            if (event.target.id === "photoMenuOverlay") closePhotoMenu();
+        }
+
+        document.getElementById("btnUseCamera").addEventListener("click", function () {
+            closePhotoMenu();
+            document.getElementById("photoInputCamera").click();
+        });
+
+        document.getElementById("btnUseGallery").addEventListener("click", function () {
+            closePhotoMenu();
+            document.getElementById("photoInputGallery").click();
+        });
+
+        function showPhotoPreview(dataUrl) {
+            document.getElementById("photoImg").src = dataUrl;
+            document.getElementById("photoImg").style.display = "block";
+            document.getElementById("photoIcon").style.display = "none";
+            document.getElementById("text-photo-hint").style.display = "none";
+            photoAlreadySet = true;
+        }
+
+        // Compress the image client-side (max 800px side, JPEG ~0.75 quality)
+        // so it stays small enough to sync fast through Realtime Database.
+        function compressImage(file, callback) {
+            const img = new Image();
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                img.onload = function () {
+                    const maxSize = 800;
+                    let w = img.width;
+                    let h = img.height;
+                    if (w > h && w > maxSize) {
+                        h = Math.round(h * (maxSize / w));
+                        w = maxSize;
+                    } else if (h > maxSize) {
+                        w = Math.round(w * (maxSize / h));
+                        h = maxSize;
+                    }
+                    const canvas = document.createElement("canvas");
+                    canvas.width = w;
+                    canvas.height = h;
+                    canvas.getContext("2d").drawImage(img, 0, 0, w, h);
+                    callback(canvas.toDataURL("image/jpeg", 0.75));
+                };
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        let lastSyncedPhoto = null; // avoids re-rendering our own upload when the listener echoes it back
+
+        function handlePhotoFile(file) {
+            if (!file) return;
+
+            compressImage(file, function (dataUrl) {
+                lastSyncedPhoto = dataUrl;
+                showPhotoPreview(dataUrl);
+                try {
+                    localStorage.setItem("zainaPhoto", dataUrl);
+                } catch (err) {
+                    console.error("Local photo save failed:", err);
+                }
+                // Push to Firebase so it shows on every device (e.g. friend's phone)
+                firebase.database().ref("zainaPhoto/dataUrl").set(dataUrl).catch(function (err) {
+                    console.error("Firebase photo sync failed:", err);
+                });
+            });
+        }
+
+        document.getElementById("photoInputCamera").addEventListener("change", function (event) {
+            handlePhotoFile(event.target.files[0]);
+        });
+
+        document.getElementById("photoInputGallery").addEventListener("change", function (event) {
+            handlePhotoFile(event.target.files[0]);
+        });
+
+        function loadSavedPhoto() {
+            // Instant local preview so the screen isn't empty while Firebase loads
+            const savedPhoto = localStorage.getItem("zainaPhoto");
+            if (savedPhoto) {
+                lastSyncedPhoto = savedPhoto;
+                showPhotoPreview(savedPhoto);
+            }
+
+            // Live listener: updates automatically on every device whenever
+            // anyone (you or your friend) changes the photo — no reload needed.
+            firebase.database().ref("zainaPhoto/dataUrl").on("value", function (snapshot) {
+                const cloudPhoto = snapshot.val();
+                if (cloudPhoto && cloudPhoto !== lastSyncedPhoto) {
+                    lastSyncedPhoto = cloudPhoto;
+                    showPhotoPreview(cloudPhoto);
+                    try {
+                        localStorage.setItem("zainaPhoto", cloudPhoto);
+                    } catch (err) {
+                        console.error("Local photo cache failed:", err);
+                    }
+                }
+            }, function (err) {
+                console.error("Firebase photo listener failed:", err);
+            });
         }
 
         function updateAgeCounter() {
@@ -455,6 +738,7 @@
         // Initialize App
         updateStaticText();
         updateAgeCounter();
+        loadSavedPhoto();
         setInterval(updateAgeCounter, 40);
     </script>
 </body>
