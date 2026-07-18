@@ -119,18 +119,17 @@
             transition: transform 0.3s ease;
             animation: photoGlow 3s ease-in-out infinite;
             transform-style: preserve-3d;
-            backface-visibility: hidden;
         }
 
-        .photo-circle.flipping {
-            animation: photoGlow 3s ease-in-out infinite, coinFlip 2.5s cubic-bezier(0.45, 0.05, 0.55, 0.95);
+        .photo-circle.has-photo {
+            animation: photoGlow 3s ease-in-out infinite, coinFlip 4.5s ease-in-out infinite;
         }
 
         @keyframes coinFlip {
             0% { transform: rotateY(0deg) scale(1); }
-            45% { transform: rotateY(160deg) scale(1.08); }
-            50% { transform: rotateY(180deg) scale(1.1); }
-            55% { transform: rotateY(200deg) scale(1.08); }
+            25% { transform: rotateY(90deg) scale(1.04); }
+            50% { transform: rotateY(180deg) scale(1.06); }
+            75% { transform: rotateY(270deg) scale(1.04); }
             100% { transform: rotateY(360deg) scale(1); }
         }
 
@@ -641,27 +640,21 @@
         function showPhotoPreview(dataUrl) {
             const circle = document.getElementById("photoCircle");
 
-            circle.classList.remove("flipping");
-            void circle.offsetWidth; // restart animation if it's already mid-flip
-            circle.classList.add("flipping");
+            // Photo shows immediately — no empty/default icon flash
+            document.getElementById("photoImg").src = dataUrl;
+            document.getElementById("photoImg").style.display = "block";
+            document.getElementById("photoIcon").style.display = "none";
+            document.getElementById("photoBadge").style.display = "none";
+            document.getElementById("text-photo-hint").style.display = "none";
 
-            // Swap the actual image right at the flip's edge-on midpoint (~1250ms of the 2.5s flip)
-            setTimeout(function () {
-                document.getElementById("photoImg").src = dataUrl;
-                document.getElementById("photoImg").style.display = "block";
-                document.getElementById("photoIcon").style.display = "none";
-                document.getElementById("photoBadge").style.display = "none";
-                document.getElementById("text-photo-hint").style.display = "none";
-            }, 1250);
-
-            setTimeout(function () {
-                circle.classList.remove("flipping");
-            }, 2550);
+            // Continuous coin-flip loop, once every 2 seconds, as long as a photo is set
+            circle.classList.add("has-photo");
 
             photoAlreadySet = true;
         }
 
         function resetPhotoUI() {
+            document.getElementById("photoCircle").classList.remove("has-photo");
             document.getElementById("photoImg").src = "";
             document.getElementById("photoImg").style.display = "none";
             document.getElementById("photoIcon").style.display = "block";
@@ -841,11 +834,11 @@
             const ms = String(Math.floor(now.getMilliseconds() / 10)).padStart(2, '0');
             
             // Updating each UI element block independently to maintain position layout
-            flipSetText("lblHour", String(displayHours));
-            flipSetText("lblMin", minutes);
-            flipSetText("lblSec", seconds);
-            document.getElementById("lblMs").innerText = ms; // too fast-changing to flip smoothly
-            flipSetText("lblAmpm", ampm);
+            document.getElementById("lblHour").innerText = String(displayHours);
+            document.getElementById("lblMin").innerText = minutes;
+            document.getElementById("lblSec").innerText = seconds;
+            document.getElementById("lblMs").innerText = ms;
+            document.getElementById("lblAmpm").innerText = ampm;
         }
 
         // Initialize App
