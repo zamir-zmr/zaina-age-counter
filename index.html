@@ -946,77 +946,88 @@
             }, 330);
         }
 
-        // Text-to-Speech for Age Announcement - Works in Browser & Kodular Apps
+        // Enhanced Text-to-Speech - Kodular Optimized
         function speakAge() {
             const yearsVal = parseInt(document.getElementById("years").innerText);
             const monthsVal = parseInt(document.getElementById("months").innerText);
             const daysVal = parseInt(document.getElementById("days").innerText);
 
             let message = "";
-            let langCode = "en"; // Default English
+            let lang = "en";
 
             if (currentLang === 'hi') {
-                // Hindi message - skip zero values
                 const parts = [];
-                
-                if (yearsVal > 0) {
-                    const yearText = yearsVal === 1 ? "साल" : "साल";
-                    parts.push(`${yearsVal} ${yearText}`);
-                }
-                if (monthsVal > 0) {
-                    const monthText = monthsVal === 1 ? "महीना" : "महीने";
-                    parts.push(`${monthsVal} ${monthText}`);
-                }
-                if (daysVal > 0) {
-                    const dayText = daysVal === 1 ? "दिन" : "दिन";
-                    parts.push(`${daysVal} ${dayText}`);
-                }
-
+                if (yearsVal > 0) parts.push(`${yearsVal} साल`);
+                if (monthsVal > 0) parts.push(`${monthsVal} महीने`);
+                if (daysVal > 0) parts.push(`${daysVal} दिन`);
                 const ageStr = parts.join(", ");
                 message = `ज़ैना पार्वीन ${ageStr} की हैं।`;
-                langCode = "hi";
+                lang = "hi";
             } else {
-                // English message - skip zero values
                 const parts = [];
-                
-                if (yearsVal > 0) {
-                    const yearText = yearsVal === 1 ? "year" : "years";
-                    parts.push(`${yearsVal} ${yearText}`);
-                }
-                if (monthsVal > 0) {
-                    const monthText = monthsVal === 1 ? "month" : "months";
-                    parts.push(`${monthsVal} ${monthText}`);
-                }
-                if (daysVal > 0) {
-                    const dayText = daysVal === 1 ? "day" : "days";
-                    parts.push(`${daysVal} ${dayText}`);
-                }
-
+                if (yearsVal > 0) parts.push(`${yearsVal} year${yearsVal > 1 ? 's' : ''}`);
+                if (monthsVal > 0) parts.push(`${monthsVal} month${monthsVal > 1 ? 's' : ''}`);
+                if (daysVal > 0) parts.push(`${daysVal} day${daysVal > 1 ? 's' : ''}`);
                 const ageStr = parts.join(", ");
                 message = `Zaina Parveen is ${ageStr} old.`;
-                langCode = "en";
+                lang = "en";
             }
 
-            // Try Android/Kodular native TTS first
-            if (window.Android && window.Android.speak) {
-                window.Android.speak(message, langCode);
-            } 
-            // Fallback to Web Speech API (Chrome, Firefox, etc)
-            else if ('speechSynthesis' in window) {
-                speechSynthesis.cancel();
-                const utterance = new SpeechSynthesisUtterance(message);
-                
-                if (currentLang === 'hi') {
-                    utterance.lang = 'hi-IN';
-                } else {
-                    utterance.lang = 'en-US';
+            console.log("Speaking: " + message);
+            playSound(message, lang);
+        }
+
+        // Method 1: Web Speech API (Most reliable in Kodular)
+        function playSound(text, lang) {
+            try {
+                if ('speechSynthesis' in window) {
+                    console.log("Using Web Speech API");
+                    const utterance = new SpeechSynthesisUtterance(text);
+                    utterance.lang = lang === 'hi' ? 'hi-IN' : 'en-US';
+                    utterance.rate = 0.9;
+                    utterance.pitch = 1;
+                    utterance.volume = 1;
+                    
+                    utterance.onstart = function() {
+                        console.log("Speech started");
+                    };
+                    utterance.onend = function() {
+                        console.log("Speech ended");
+                    };
+                    utterance.onerror = function(event) {
+                        console.error("Speech error:", event.error);
+                        // Try fallback
+                        tryGoogleTTS(text, lang);
+                    };
+
+                    speechSynthesis.cancel();
+                    speechSynthesis.speak(utterance);
+                    return;
                 }
+            } catch (error) {
+                console.error("Web Speech error:", error);
+            }
 
-                utterance.rate = 1;
-                utterance.pitch = 1;
-                utterance.volume = 1;
+            // Fallback to Google Translate TTS
+            tryGoogleTTS(text, lang);
+        }
 
-                speechSynthesis.speak(utterance);
+        // Method 2: Google Translate TTS (Fallback)
+        function tryGoogleTTS(text, lang) {
+            try {
+                console.log("Trying Google Translate TTS");
+                const encodedText = encodeURIComponent(text);
+                const url = `https://translate.google.com/translate_tts?ie=UTF-8&q=${encodedText}&tl=${lang}&client=tw-ob`;
+                
+                const audio = new Audio(url);
+                audio.volume = 1;
+                audio.play().catch(function(error) {
+                    console.error("Google TTS error:", error);
+                    alert("Sound not available. Check internet connection.");
+                });
+            } catch (error) {
+                console.error("Google TTS error:", error);
+                alert("Sound playback failed");
             }
         }
 
