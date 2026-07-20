@@ -948,9 +948,9 @@
 
         // Enhanced Text-to-Speech - Kodular Optimized
         function speakAge() {
-            const yearsVal = parseInt(document.getElementById("years").innerText);
-            const monthsVal = parseInt(document.getElementById("months").innerText);
-            const daysVal = parseInt(document.getElementById("days").innerText);
+            const yearsVal = parseInt(document.getElementById("years").innerText || 0);
+            const monthsVal = parseInt(document.getElementById("months").innerText || 0);
+            const daysVal = parseInt(document.getElementById("days").innerText || 0);
 
             let message = "";
             let lang = "en";
@@ -977,58 +977,53 @@
             playSound(message, lang);
         }
 
-        // Method 1: Web Speech API (Most reliable in Kodular)
+        // Method 1: Cloud-based TTS using ttsmp3.com (WORKS IN KODULAR)
         function playSound(text, lang) {
             try {
-                if ('speechSynthesis' in window) {
-                    console.log("Using Web Speech API");
-                    const utterance = new SpeechSynthesisUtterance(text);
-                    utterance.lang = lang === 'hi' ? 'hi-IN' : 'en-US';
-                    utterance.rate = 0.9;
-                    utterance.pitch = 1;
-                    utterance.volume = 1;
-                    
-                    utterance.onstart = function() {
-                        console.log("Speech started");
-                    };
-                    utterance.onend = function() {
-                        console.log("Speech ended");
-                    };
-                    utterance.onerror = function(event) {
-                        console.error("Speech error:", event.error);
-                        // Try fallback
-                        tryGoogleTTS(text, lang);
-                    };
+                console.log("Using Cloud TTS");
+                const encodedText = encodeURIComponent(text);
+                const ttsUrl = `https://ttsmp3.com/api/convert?text=${encodedText}&lang=${lang}&rate=0.8&voice=Google&format=json`;
 
-                    speechSynthesis.cancel();
-                    speechSynthesis.speak(utterance);
-                    return;
-                }
+                fetch(ttsUrl)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.status === 'success' && data.result && data.result.url) {
+                            const audioUrl = data.result.url;
+                            const audio = new Audio(audioUrl);
+                            audio.volume = 1;
+                            
+                            audio.onplay = function() {
+                                console.log("Audio playing");
+                            };
+                            
+                            audio.onended = function() {
+                                console.log("Audio finished");
+                            };
+                            
+                            audio.onerror = function() {
+                                console.error("Audio play error");
+                            };
+                            
+                            audio.play().catch(function(error) {
+                                console.error("Play failed:", error);
+                            });
+                        } else {
+                            console.error("TTS generation failed");
+                        }
+                    })
+                    .catch(error => {
+                        console.error("Network error:", error);
+                    });
+
             } catch (error) {
-                console.error("Web Speech error:", error);
+                console.error("Cloud TTS error:", error);
             }
-
-            // Fallback to Google Translate TTS
-            tryGoogleTTS(text, lang);
         }
 
-        // Method 2: Google Translate TTS (Fallback)
+        // Method 2: Fallback (not used anymore)
         function tryGoogleTTS(text, lang) {
-            try {
-                console.log("Trying Google Translate TTS");
-                const encodedText = encodeURIComponent(text);
-                const url = `https://translate.google.com/translate_tts?ie=UTF-8&q=${encodedText}&tl=${lang}&client=tw-ob`;
-                
-                const audio = new Audio(url);
-                audio.volume = 1;
-                audio.play().catch(function(error) {
-                    console.error("Google TTS error:", error);
-                    alert("Sound not available. Check internet connection.");
-                });
-            } catch (error) {
-                console.error("Google TTS error:", error);
-                alert("Sound playback failed");
-            }
+            // Using cloud TTS instead
+            playSound(text, lang);
         }
 
         function updateAgeCounter() {
