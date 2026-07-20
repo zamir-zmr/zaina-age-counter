@@ -946,13 +946,14 @@
             }, 330);
         }
 
-        // Text-to-Speech for Age Announcement
+        // Text-to-Speech for Age Announcement - Works in Browser & Kodular Apps
         function speakAge() {
             const yearsVal = parseInt(document.getElementById("years").innerText);
             const monthsVal = parseInt(document.getElementById("months").innerText);
             const daysVal = parseInt(document.getElementById("days").innerText);
 
             let message = "";
+            let langCode = "en"; // Default English
 
             if (currentLang === 'hi') {
                 // Hindi message - skip zero values
@@ -973,6 +974,7 @@
 
                 const ageStr = parts.join(", ");
                 message = `ज़ैना पार्वीन ${ageStr} की हैं।`;
+                langCode = "hi";
             } else {
                 // English message - skip zero values
                 const parts = [];
@@ -992,24 +994,30 @@
 
                 const ageStr = parts.join(", ");
                 message = `Zaina Parveen is ${ageStr} old.`;
+                langCode = "en";
             }
 
-            // Cancel any ongoing speech
-            speechSynthesis.cancel();
+            // Try Android/Kodular native TTS first
+            if (window.Android && window.Android.speak) {
+                window.Android.speak(message, langCode);
+            } 
+            // Fallback to Web Speech API (Chrome, Firefox, etc)
+            else if ('speechSynthesis' in window) {
+                speechSynthesis.cancel();
+                const utterance = new SpeechSynthesisUtterance(message);
+                
+                if (currentLang === 'hi') {
+                    utterance.lang = 'hi-IN';
+                } else {
+                    utterance.lang = 'en-US';
+                }
 
-            const utterance = new SpeechSynthesisUtterance(message);
-            
-            if (currentLang === 'hi') {
-                utterance.lang = 'hi-IN'; // Hindi India
-            } else {
-                utterance.lang = 'en-US'; // English US
+                utterance.rate = 1;
+                utterance.pitch = 1;
+                utterance.volume = 1;
+
+                speechSynthesis.speak(utterance);
             }
-
-            utterance.rate = 1;
-            utterance.pitch = 1;
-            utterance.volume = 1;
-
-            speechSynthesis.speak(utterance);
         }
 
         function updateAgeCounter() {
