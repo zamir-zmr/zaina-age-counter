@@ -261,21 +261,21 @@
             letter-spacing: 0.5px;
         }
 
-        .photo-badge {
-            position: absolute;
-            bottom: 2px;
-            right: 2px;
-            width: 30px;
-            height: 30px;
-            background: #00f2fe;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 0.9rem;
-            box-shadow: 0 0 10px rgba(0, 242, 254, 0.5);
-        }
-
+/*         .photo-badge {
+    position: absolute;
+    bottom: 2px;
+    right: 2px;
+    width: 30px;
+    height: 30px;
+    background: #00f2fe;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.9rem;
+    box-shadow: 0 0 10px rgba(0, 242, 254, 0.5);
+}
+ */
         .photo-menu-overlay {
             display: none;
             position: fixed;
@@ -434,36 +434,6 @@
             border-radius: 16px;
             padding: 15px;
             margin-bottom: 25px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 15px;
-        }
-
-        .speaker-btn {
-            background: rgba(0, 242, 254, 0.15);
-            border: 1.5px solid rgba(0, 242, 254, 0.4);
-            border-radius: 50%;
-            width: 45px;
-            height: 45px;
-            font-size: 1.3rem;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.3s ease;
-            flex-shrink: 0;
-        }
-
-        .speaker-btn:hover {
-            background: rgba(0, 242, 254, 0.25);
-            border-color: rgba(0, 242, 254, 0.7);
-            box-shadow: 0 0 15px rgba(0, 242, 254, 0.3);
-            transform: scale(1.05);
-        }
-
-        .speaker-btn:active {
-            transform: scale(0.95);
         }
 
         .total-days {
@@ -586,8 +556,8 @@
         <div class="photo-wrapper">
             <div class="photo-circle" id="photoCircle" onclick="openPhotoMenu()">
                 <img id="photoImg" src="" alt="Baby Photo" style="display:none;">
-                <span class="photo-icon" id="photoIcon">📷</span>
-                <span class="photo-badge" id="photoBadge">📷</span>
+                <span class="photo-icon" id="photoIcon"></span>
+                <span class="photo-badge" id="photoBadge"></span>
             </div>
             <div class="photo-shadow" id="photoShadow"></div>
         </div>
@@ -631,7 +601,6 @@
             <div class="total-days" id="totalDaysBox">
                 <span id="text-total-prefix">Total:</span> <span id="totalDaysCount">0</span> <span id="text-total-suffix">Days Old</span>
             </div>
-            <button class="speaker-btn" id="speakerBtn" onclick="speakAge()" title="Speak Age">🔊</button>
         </div>
 
         <!-- Live Status Ticker -->
@@ -944,86 +913,6 @@
             setTimeout(function () {
                 el.classList.remove("digit-flip");
             }, 330);
-        }
-
-        // Enhanced Text-to-Speech - Kodular Optimized
-        function speakAge() {
-            const yearsVal = parseInt(document.getElementById("years").innerText || 0);
-            const monthsVal = parseInt(document.getElementById("months").innerText || 0);
-            const daysVal = parseInt(document.getElementById("days").innerText || 0);
-
-            let message = "";
-            let lang = "en";
-
-            if (currentLang === 'hi') {
-                const parts = [];
-                if (yearsVal > 0) parts.push(`${yearsVal} साल`);
-                if (monthsVal > 0) parts.push(`${monthsVal} महीने`);
-                if (daysVal > 0) parts.push(`${daysVal} दिन`);
-                const ageStr = parts.join(", ");
-                message = `ज़ैना पार्वीन ${ageStr} की हैं।`;
-                lang = "hi";
-            } else {
-                const parts = [];
-                if (yearsVal > 0) parts.push(`${yearsVal} year${yearsVal > 1 ? 's' : ''}`);
-                if (monthsVal > 0) parts.push(`${monthsVal} month${monthsVal > 1 ? 's' : ''}`);
-                if (daysVal > 0) parts.push(`${daysVal} day${daysVal > 1 ? 's' : ''}`);
-                const ageStr = parts.join(", ");
-                message = `Zaina Parveen is ${ageStr} old.`;
-                lang = "en";
-            }
-
-            console.log("Speaking: " + message);
-            playSound(message, lang);
-        }
-
-        // Method 1: Cloud-based TTS using ttsmp3.com (WORKS IN KODULAR)
-        function playSound(text, lang) {
-            try {
-                console.log("Using Cloud TTS");
-                const encodedText = encodeURIComponent(text);
-                const ttsUrl = `https://ttsmp3.com/api/convert?text=${encodedText}&lang=${lang}&rate=0.8&voice=Google&format=json`;
-
-                fetch(ttsUrl)
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.status === 'success' && data.result && data.result.url) {
-                            const audioUrl = data.result.url;
-                            const audio = new Audio(audioUrl);
-                            audio.volume = 1;
-                            
-                            audio.onplay = function() {
-                                console.log("Audio playing");
-                            };
-                            
-                            audio.onended = function() {
-                                console.log("Audio finished");
-                            };
-                            
-                            audio.onerror = function() {
-                                console.error("Audio play error");
-                            };
-                            
-                            audio.play().catch(function(error) {
-                                console.error("Play failed:", error);
-                            });
-                        } else {
-                            console.error("TTS generation failed");
-                        }
-                    })
-                    .catch(error => {
-                        console.error("Network error:", error);
-                    });
-
-            } catch (error) {
-                console.error("Cloud TTS error:", error);
-            }
-        }
-
-        // Method 2: Fallback (not used anymore)
-        function tryGoogleTTS(text, lang) {
-            // Using cloud TTS instead
-            playSound(text, lang);
         }
 
         function updateAgeCounter() {
